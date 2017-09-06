@@ -11,7 +11,7 @@ import Foundation
 /**
  Model Representation of an athlete.
  */
-public struct Athlete {
+@objc public class Athlete: NSObject {
     public let athleteId: Int
     public let resourceState: Int
     public let firstName: String

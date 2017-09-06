@@ -36,7 +36,7 @@ internal class JSONSupport {
                 warnings.append("Dictionary value is missing: \(key)")
             }
             else {
-                warnings.append("Dictionary value is wrong type: \(key), \(dictionary[key])")
+                warnings.append("Dictionary value is wrong type: \(key), \(String(describing: dictionary[key]))")
             }
 
             for warning in warnings {

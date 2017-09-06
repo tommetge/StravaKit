@@ -42,14 +42,40 @@ public let RateLimitUsageKey = "Rate-Limit-Usage"
  - POST: Post method.
  - PUT: Put method.
  */
-public enum HTTPMethod: String {
-    case GET = "GET"
-    case POST = "POST"
-    case PUT = "PUT"
+@objc public enum HTTPMethod: Int {
+    case GET
+    case POST
+    case PUT
+
+    public typealias RawValue = String
+
+    public var rawValue: RawValue {
+        switch self {
+        case .GET:
+            return "GET"
+        case .POST:
+            return "POST"
+        case .PUT:
+            return "PUT"
+        }
+    }
+
+    public init?(rawValue: RawValue) {
+        switch rawValue {
+        case "GET":
+            self = .GET
+        case "POST":
+            self = .POST
+        case "PUT":
+            self = .PUT
+        default:
+            self = .GET
+        }
+    }
 }
 
 /** Strava Error Codes */
-public enum StravaErrorCode: Int {
+@objc public enum StravaErrorCode: Int {
     /** Error on backend. */
     case remoteError = 501
     /** Required credentials were missing. */
@@ -75,7 +101,7 @@ public enum StravaErrorCode: Int {
 /**
  Strava class for handling all API endpoint requests.
  */
-open class Strava {
+@objc open class Strava: NSObject {
 
     internal static let sharedInstance = Strava()
     internal let dateFormatter = DateFormatter()
@@ -91,7 +117,9 @@ open class Strava {
     /**
      Strava initializer which should not be accessed externally.
      */
-    internal init() {
+    override internal init() {
+        super.init()
+
         loadAccessData()
 
         // Use ISO 8601 standard format for date strings

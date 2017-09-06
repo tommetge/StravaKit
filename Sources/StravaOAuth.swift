@@ -27,15 +27,45 @@ public enum OAuthResourcePath: String {
 }
 
 /** OAuth Scopes */
-public enum OAuthScope: String {
+@objc public enum OAuthScope: Int {
     /** Default, private activities are not returned, privacy zones are respected in stream requests. */
-    case Public = "public"
+    case Public
     /** Modify activities, upload on the user’s behalf. */
-    case Write = "write"
+    case Write
     /** View private activities and data within privacy zones. */
-    case Private = "view_private"
+    case Private
     /** Both ‘view_private’ and ‘write’ access. */
-    case PrivateWrite = "view_private,write"
+    case PrivateWrite
+
+    public typealias RawValue = String
+
+    public var rawValue: RawValue {
+        switch self {
+        case .Public:
+            return "public"
+        case .Write:
+            return "write"
+        case .Private:
+            return "view_private"
+        case .PrivateWrite:
+            return"view_private,write"
+        }
+    }
+
+    public init?(rawValue: RawValue) {
+        switch rawValue {
+        case "public":
+            self = .Public
+        case "write":
+            self = .Write
+        case "view_private":
+            self = .Private
+        case "view_private,write":
+            self = .PrivateWrite
+        default:
+            self = .Public
+        }
+    }
 }
 
 /**
@@ -45,12 +75,26 @@ public enum OAuthScope: String {
 
  Docs: http://strava.github.io/api/v3/oauth/
  */
-public extension Strava {
+@objc public extension Strava {
+
+    /**
+     Allows Objective C clients to access the StravaAuthorizationCompletedNotification constant.
+     */
+    public static func authorizationCompletedNotificationName() -> String {
+        return StravaAuthorizationCompletedNotification;
+    }
+
+    /**
+     Allows Objective C clients to access the StravaStatusKey constant.
+     */
+    public static func StatusKeyName() -> String {
+        return StravaStatusKey;
+    }
 
     /**
      Initialize clientId, clientSecret and redirectURI.
      */
-    public static func set(clientId: String, clientSecret: String, redirectURI: String, sandbox: Bool? = nil) {
+    public static func set(clientId: String, clientSecret: String, redirectURI: String, sandbox: Bool = false) {
         sharedInstance.clientId = clientId
         sharedInstance.clientSecret = clientSecret
         sharedInstance.redirectURI = redirectURI

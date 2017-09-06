@@ -11,7 +11,7 @@ import Foundation
 /**
  Requestor protocol used to allow for default and custom requestor instances.
  */
-public protocol Requestor {
+@objc public protocol Requestor {
 
     /** Base URL for the API endpoints. */
     var baseUrl: String { get set }

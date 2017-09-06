@@ -44,7 +44,13 @@ internal class DefaultRequestor: Requestor {
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         if method == .POST || method == .PUT {
             if let params = params {
-                request.httpBody = convertParametersForBody(params)
+                if let _ = params["fileURL"] {
+                    let boundary = "Boundary-\(UUID().uuidString)"
+                    request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+                    request.httpBody = convertParametersForUploadBody(boundary, params: params)
+                } else {
+                    request.httpBody = convertParametersForBody(params)
+                }
             }
         }
 
@@ -159,13 +165,46 @@ internal class DefaultRequestor: Requestor {
         return try? JSONSerialization.data(withJSONObject: params, options: [])
     }
 
+    internal func convertParametersForUploadBody(_ boundary: String, params: ParamsDictionary) -> Data? {
+        var bodyData = Data()
+
+        if params["fileURL"] != nil && params["fileName"] != nil {
+            let fileName = params["fileName"] as! String
+            let fileURL = params["fileURL"] as! URL
+            guard let fileData = try? NSData(contentsOfFile: fileURL.path) as Data else {
+                NSLog("Unable to read data from file at \(fileURL)")
+                return nil
+            }
+
+            bodyData.append("--\(boundary)\r\n".data(using: .utf8)!)
+            bodyData.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
+            bodyData.append("Content-Type: application/octet-stream\r\n\r\n".data(using: .utf8)!)
+            bodyData.append(fileData)
+            bodyData.append("\r\n".data(using: .utf8)!)
+        }
+
+        for (key,value) in params {
+            if key == "fileURL" || key == "fileName" {
+                continue;
+            }
+
+            bodyData.append("--\(boundary)\r\n".data(using: .utf8)!)
+            bodyData.append("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n".data(using: .utf8)!)
+            bodyData.append("\(value)\r\n".data(using: .utf8)!)
+        }
+
+        bodyData.append("--\(boundary)--\r\n".data(using: .utf8)!)
+
+        return bodyData
+    }
+
     internal func printResponse(_ response: HTTPURLResponse, data: Data?) {
         guard let data = data else {
             return
         }
 
         let string = String(data: data, encoding: String.Encoding.utf8)
-        print("Response: \(string)")
+        print("Response: \(String(describing: string))")
     }
 
 }
